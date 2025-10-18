@@ -1,0 +1,150 @@
+@startuml
+'==========================
+' Library Management System UML
+'==========================
+
+'--------------------------
+' Book Management
+'--------------------------
+package library {
+
+package "Book Management" {
+    class Book {
+        -title : String
+        -author : String
+        -isbn : String
+        -publicationYear : int
+        -isBorrowed : boolean
+        +getTitle()
+        +setTitle(title)
+        +getAuthor()
+        +setAuthor(author)
+        +getIsbn()
+        +getPublicationYear()
+        +setPublicationYear(year)
+        +isBorrowed()
+        +setBorrowed(borrowed)
+    }
+
+    class BookRepository {
+        -bookMap : Map<String, Book>
+        +addBook(book)
+        +removeBook(isbn)
+        +updateBookTitle(isbn, newTitle)
+        +updateBookAuthor(isbn, newAuthor)
+        +updateBookYear(isbn, newYear)
+        +getBookByIsbn(isbn)
+        +searchByTitle(title)
+        +searchByAuthor(author)
+        +displayAllBooks()
+    }
+
+    BookRepository "1" o-- "*" Book : manages >
+}
+
+'--------------------------
+' Patron Management
+'--------------------------
+package "Patron Management" {
+    class Patron {
+        -patronName : String
+        -patronId : String
+        -email : String
+        +getPatronId()
+        +getPatronName()
+        +setPatronName(name)
+        +getEmail()
+        +setEmail(email)
+    }
+
+    class PatronRepository {
+        -patronMap : Map<String, Patron>
+        +addPatron(patron)
+        +removePatron(id)
+        +getPatronById(id)
+        +updatePatronName(id, name)
+        +updatePatronEmail(id, email)
+        +displayAllPatrons()
+    }
+
+    PatronRepository "1" o-- "*" Patron : manages >
+}
+
+'--------------------------
+' Borrow Management
+'--------------------------
+package "Borrow Management" {
+    enum BorrowStatus {
+        BORROWED
+        RETURNED
+    }
+
+    class BorrowRecord {
+        -recordId : String
+        -patronId : String
+        -bookId : String
+        -borrowDate : LocalDate
+        -returnDate : LocalDate
+        -status : BorrowStatus
+        +getRecordId()
+        +getPatronId()
+        +getBookId()
+        +getBorrowDate()
+        +getReturnDate()
+        +getStatus()
+        +setReturnDate(date)
+        +setStatus(status)
+    }
+
+    class BorrowRepository {
+        -borrowMap : Map<String, BorrowRecord>
+        +addBorrowRecord(record)
+        +getBorrowRecord(id)
+        +updateBorrowRecord(id, status, returnDate)
+        +getRecordsByPatronId(patronId)
+        +getRecordsByBookId(bookId)
+        +displayAllRecords()
+    }
+
+    BorrowRepository "1" o-- "*" BorrowRecord : manages >
+    BorrowRecord --> BorrowStatus : status >
+    BorrowRecord --> Patron : references (patronId)
+    BorrowRecord --> Book : references (bookId)
+}
+
+'--------------------------
+' Inventory Management
+'--------------------------
+package "Inventory Management" {
+    class Inventory {
+        -bookRepository : BookRepository
+        +isBookAvailable(isbn)
+        +checkoutCopy(isbn)
+        +returnCopy(isbn)
+    }
+
+    Inventory --> BookRepository : uses >
+}
+
+'--------------------------
+' Lending Service
+'--------------------------
+package "Lending Service" {
+    class LendingService {
+        -bookRepository : BookRepository
+        -patronRepository : PatronRepository
+        -borrowRepository : BorrowRepository
+        -inventory : Inventory
+        +checkoutBook(patronId, isbn)
+        +returnBook(patronId, isbn)
+        +getBorrowHistory(patronId)
+    }
+
+    LendingService --> BookRepository : uses >
+    LendingService --> PatronRepository : uses >
+    LendingService --> BorrowRepository : uses >
+    LendingService --> Inventory : uses >
+}
+}
+
+@enduml
